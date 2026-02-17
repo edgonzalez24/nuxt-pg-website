@@ -18,5 +18,6 @@ model SiteReview {
   name String
   subtitle String
   description String
+  profileImage String?
   createdAt DateTime @default(now())
 }
