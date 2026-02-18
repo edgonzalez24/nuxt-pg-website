@@ -30,6 +30,7 @@ Modern web application built with Nuxt.js, Vue, TypeScript, Prisma and PostgreSQ
 - <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/eslint/eslint-original.svg" width="20" height="20"/> **ESLint** – JavaScript/TypeScript linter
 - **Zod** – TypeScript-first schema validation
 - **TSX** – TypeScript runner for Node.js
+- **Scalar** – Beautiful API documentation and testing UI for OpenAPI
 
 ## 📋 Features
 
@@ -92,6 +93,20 @@ Modern web application built with Nuxt.js, Vue, TypeScript, Prisma and PostgreSQ
    ```
 
 ## 🚀 Usage
+
+### API Documentation
+
+The API is documented with **OpenAPI** specifications and can be explored using **Scalar**. When the development server is running, access the interactive API documentation at:
+
+```
+http://localhost:3000/_scalar
+```
+
+Scalar provides:
+- 📖 **Interactive API documentation** – Browse all endpoints with detailed descriptions
+- 🧪 **Request testing** – Test endpoints directly from the UI
+- 📋 **Schema exploration** – View request/response schemas and types
+- 🔒 **Authentication support** – Test secured endpoints
 
 ### Development server
 
@@ -157,6 +172,8 @@ bun run preview
 | `db:migrate`     | Run database migrations            |
 | `db:seed`        | Seed database with initial data    |
 
+
+
 ## 📁 Project Structure
 
 ```
@@ -221,6 +238,47 @@ The app is configured with:
 
 The Prisma client is generated into `app/generated/prisma` for better integration with the Nuxt app.
 
+## 📚 API Documentation with OpenAPI & Scalar
+
+### Adding OpenAPI Documentation to Endpoints
+
+All API endpoints use OpenAPI v3.0 specifications via `defineRouteMeta`. Here's an example:
+
+```typescript
+defineRouteMeta({
+  openAPI: {
+    tags: ['products'],
+    summary: 'Get all products',
+    description: 'Retrieves a list of all available products in the catalog.',
+    responses: {
+      200: {
+        description: 'Products retrieved successfully',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'array' as const,
+              items: {
+                type: 'object' as const,
+                properties: {
+                  id: { type: 'string' as const, description: 'Unique product ID' },
+                  name: { type: 'string' as const, description: 'Product name' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  }
+});
+```
+
+### Viewing API Documentation
+
+1. Start the development server: `bun dev`
+2. Navigate to `http://localhost:3000/_scalar`
+3. Explore endpoints, test requests, and view schemas in the interactive Scalar UI
+
 ## 📚 Resources
 
 - [Nuxt documentation](https://nuxt.com/docs)
@@ -228,6 +286,7 @@ The Prisma client is generated into `app/generated/prisma` for better integratio
 - [Vue documentation](https://vuejs.org/)
 - [Tailwind CSS documentation](https://tailwindcss.com/docs)
 - [Neon documentation](https://neon.tech/docs)
+- [Scalar Nuxt](https://scalar.com/products/api-references/integrations/nuxt)
 
 ## 📝 License
 

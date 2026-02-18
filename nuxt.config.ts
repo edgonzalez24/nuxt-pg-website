@@ -22,7 +22,8 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/icon',
     '@nuxt/image',
-    '@nuxt/ui'
+    '@nuxt/ui',
+    '@scalar/nuxt',
   ],
 
   // SPA - Single Page Application
@@ -34,11 +35,17 @@ export default defineNuxtConfig({
 
   // Prender - Todo el sitio
   nitro: {
+    experimental: {
+      openAPI: true,
+    },
     prerender: {
       routes: ['/', '/about', '/contact', '/pricing', '/products'],
       ignore: ['/dashboard', '/dashboard/**'],
       // Habilitar el crawling para descubrir enlaces automáticamente
       crawlLinks: true,
     },
+  },
+  scalar: {
+    theme: 'moon',
   },
 });
