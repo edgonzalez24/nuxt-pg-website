@@ -1,16 +1,6 @@
-import { Prisma, PrismaClient } from "../app/generated/prisma/client.js";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { Prisma } from "../../app/generated/prisma/client.js";
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-
-const prisma = new PrismaClient({
-  adapter,
-});
-
-
-const siteReviewData: Prisma.SiteReviewCreateInput[] = [
+export const siteReviewData: Prisma.SiteReviewCreateInput[] = [
   {
     name: "María González",
     subtitle: "Desarrolladora Frontend",
@@ -82,13 +72,3 @@ const siteReviewData: Prisma.SiteReviewCreateInput[] = [
     profileImage: "https://i.pravatar.cc/150?img=51",
   },
 ];
-
-
-
-export async function main() {
-  for (const u of siteReviewData) {
-    await prisma.siteReview.create({ data: u });
-  }
-}
-
-main();
