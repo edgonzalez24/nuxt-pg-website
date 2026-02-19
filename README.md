@@ -193,9 +193,14 @@ Nuxt project/
 │   │   └── prisma/         # Generated Prisma client
 │   └── utils/              # Frontend utilities
 ├── prisma/                 # Prisma configuration
+│   ├── schema.prisma       # Prisma schema (models, relationships, configuration)
 │   ├── migrations/         # Database migrations
-│   ├── schema.prisma       # Prisma schema
-│   └── seed.ts             # Database seed script
+│   │   ├── migration_lock.toml  # Migration lock file
+│   │   └── [timestamp]_*/       # Migration directories with SQL files
+│   └── seed/               # Database seed scripts
+│       ├── seed-database.ts     # Main seed runner
+│       ├── product.seed.ts      # Product seeding logic
+│       └── siteReviews.seed.ts  # Site reviews seeding logic
 ├── server/                 # Nuxt server
 │   ├── api/                # API routes
 │   └── middleware/         # Server middleware
