@@ -18,7 +18,8 @@
       />
     </div>
 
-    <UTable :data="data" :columns="columns" class="flex-1" />
+    <UTable :data="products" :columns="columns" class="flex-1" />
+    <SharedPagination :total="total" :model-value="currentPage" :per-page="perPage" />
   </div>
 </template>
 
@@ -26,97 +27,71 @@
 import { h, resolveComponent } from 'vue';
 import type { TableColumn } from '@nuxt/ui';
 const UBadge = resolveComponent('UBadge');
-type Payment = {
-  id: string;
-  date: string;
-  status: 'paid' | 'failed' | 'refunded';
-  email: string;
-  amount: number;
-};
-const data = ref<Payment[]>([
-  {
-    id: '4600',
-    date: '2024-03-11T15:30:00',
-    status: 'paid',
-    email: 'james.anderson@example.com',
-    amount: 594,
-  },
-  {
-    id: '4599',
-    date: '2024-03-11T10:10:00',
-    status: 'failed',
-    email: 'mia.white@example.com',
-    amount: 276,
-  },
-  {
-    id: '4598',
-    date: '2024-03-11T08:50:00',
-    status: 'refunded',
-    email: 'william.brown@example.com',
-    amount: 315,
-  },
-  {
-    id: '4597',
-    date: '2024-03-10T19:45:00',
-    status: 'paid',
-    email: 'emma.davis@example.com',
-    amount: 529,
-  },
-  {
-    id: '4596',
-    date: '2024-03-10T15:55:00',
-    status: 'paid',
-    email: 'ethan.harris@example.com',
-    amount: 639,
-  },
-]);
-const columns: TableColumn<Payment>[] = [
+const { products, currentPage, totalPages, perPage, total } = await usePaginatedProducts();
+
+const columns: TableColumn<Product>[] = [
   {
     accessorKey: 'id',
     header: '#',
     cell: ({ row }) => `#${row.getValue('id')}`,
   },
   {
-    accessorKey: 'date',
-    header: 'Date',
+    accessorKey: 'images',
+    header: 'Imagen',
     cell: ({ row }) => {
-      return new Date(row.getValue('date')).toLocaleString('en-US', {
-        day: 'numeric',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
+      const images = row.getValue('images') as string[];
+      if (images.length === 0) {
+        return h('span', { class: 'w-12 h-12 bg-gray-200 rounded' });
+      }
+      return h('img', {
+        src: images[0],
+        alt: 'Product Image',
+        class: 'w-12 h-12 object-cover rounded',
       });
     },
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
+    accessorKey: 'name',
+    header: 'Nombre',
     cell: ({ row }) => {
-      const color = {
-        paid: 'success' as const,
-        failed: 'error' as const,
-        refunded: 'neutral' as const,
-      }[row.getValue('status') as string];
-      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
-        row.getValue('status')
+      return h('div', { class: 'font-medium' }, row.getValue('name'));
+    },
+  },
+  {
+    accessorKey: 'description',
+    header: 'Descripción',
+    cell: ({ row }) => {
+      return h('div', { style: 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;max-width: 300px;', class: 'font-medium truncate-text' }, String(row.getValue('description')).slice(0, 50) + '...');
+    },
+  },
+  {
+    accessorKey: 'price',
+    header: 'Precio',
+    cell: ({ row }) => {
+      const price = row.getValue('price') as number;
+      return h('div', { class: 'font-medium' }, formatCurrency(price));
+    },
+  },
+  {
+    accessorKey: 'tags',
+    header: 'Etiquetas',
+    cell: ({ row }) => {
+      const tags = row.getValue('tags') as string[];
+      if (!Array.isArray(tags) || tags.length === 0) return '-';
+      return h(
+        'div',
+        { class: 'flex flex-wrap gap-1' },
+        tags.map((tag) =>
+          h(UBadge, { color: 'primary', size: 'xs', variant: 'subtle', class: 'mr-0.5' }, { default: () => tag })
+        )
       );
     },
   },
   {
-    accessorKey: 'email',
-    header: 'Email',
-  },
-  {
-    accessorKey: 'amount',
-    header: () => h('div', { class: 'text-right' }, 'Amount'),
+    accessorKey: 'createdAt',
+    header: 'Fecha de Creación',
     cell: ({ row }) => {
-      const amount = Number.parseFloat(row.getValue('amount'));
-      const formatted = new Intl.NumberFormat('es-MX', {
-        style: 'currency',
-        currency: 'MXN',
-      }).format(amount);
-      return h('div', { class: 'text-right font-medium' }, formatted);
+      return dayMonthYearFormat(new Date(row.getValue('createdAt') as string));
     },
   },
 ];
