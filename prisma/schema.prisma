@@ -22,7 +22,7 @@ model SiteReview {
   createdAt    DateTime @default(now())
 }
 
-model Products {
+model Product {
   id          Int      @id @default(autoincrement())
   slug        String   @unique
   name        String
