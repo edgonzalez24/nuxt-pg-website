@@ -24,6 +24,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/ui',
     '@scalar/nuxt',
+    'nuxt-auth-utils',
   ],
 
   // SPA - Single Page Application

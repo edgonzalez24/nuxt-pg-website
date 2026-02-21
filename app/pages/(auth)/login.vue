@@ -4,9 +4,16 @@ import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui';
 
 definePageMeta({
   layout: 'login-layout',
+  middleware: 'not-authenticated',
 });
 
 const toast = useToast();
+const cookieLoginEmail = useCookie<string|null>('login_email', {
+  sameSite: 'strict',
+  maxAge: 60 * 60 * 24 * 30, // 30 days
+});
+const { login } = useAuthentication();
+const isPosting = ref(false);
 
 const fields: AuthFormField[] = [
   {
@@ -15,6 +22,7 @@ const fields: AuthFormField[] = [
     label: 'Correo electrónico',
     placeholder: 'Ingresa tu correo electrónico',
     required: true,
+    defaultValue: cookieLoginEmail.value || undefined,
   },
   {
     name: 'password',
@@ -27,6 +35,7 @@ const fields: AuthFormField[] = [
     name: 'remember',
     label: 'Recuérdame',
     type: 'checkbox',
+    defaultValue: !!cookieLoginEmail.value,
   },
 ];
 
@@ -52,12 +61,28 @@ const schema = z.object({
   password: z
     .string('La contraseña es requerida')
     .min(8, 'Debe tener al menos 8 caracteres'),
+  remember: z.boolean().optional(),
 });
 
 type Schema = z.output<typeof schema>;
 
-function onSubmit(payload: FormSubmitEvent<Schema>) {
-  console.log('Submitted', payload);
+const onSubmit = async (payload: FormSubmitEvent<Schema>) => {
+  const { email, password, remember } = payload.data;
+
+  isPosting.value = true;
+  if (remember) {
+    cookieLoginEmail.value = email;
+  } else {
+    cookieLoginEmail.value = null;
+  }
+
+  const isSuccessful = await login(email, password);
+  if (isSuccessful) {
+    toast.add({ title: 'Éxito', description: 'Has iniciado sesión correctamente' });
+  } else {
+    toast.add({ title: 'Error', description: 'Credenciales inválidas', color: 'error' });
+  }
+  isPosting.value = false;
 }
 </script>
 
@@ -71,6 +96,8 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
         icon="i-lucide-user"
         :fields="fields"
         :providers="providers"
+        :loading="isPosting"
+        :disabled="isPosting"
         @submit="onSubmit"
         :ui="{
           leadingIcon: 'text-5xl',
