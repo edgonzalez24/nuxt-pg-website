@@ -15,6 +15,7 @@
         label="Agregar Producto"
         color="primary"
         size="lg"
+        to="/dashboard/product/new"
       />
     </div>
 
@@ -27,6 +28,7 @@
 import { h, resolveComponent } from 'vue';
 import type { TableColumn } from '@nuxt/ui';
 const UBadge = resolveComponent('UBadge');
+const NuxtLink = resolveComponent('NuxtLink');
 const { products, currentPage, totalPages, perPage, total } = await usePaginatedProducts();
 
 const columns: TableColumn<Product>[] = [
@@ -54,7 +56,13 @@ const columns: TableColumn<Product>[] = [
     accessorKey: 'name',
     header: 'Nombre',
     cell: ({ row }) => {
-      return h('div', { class: 'font-medium' }, row.getValue('name'));
+      const productName = row.getValue('name');
+      const productId = row.getValue('id');
+
+      return h(NuxtLink, {
+        to: `/dashboard/product/${productId}`,
+        class: 'text-blue-500 hover:text-blue-700 underline cursor-pointer' 
+      }, { default: () => productName  });
     },
   },
   {
