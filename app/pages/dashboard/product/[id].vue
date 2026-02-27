@@ -1,9 +1,13 @@
 <script lang="ts" setup>
-import { z } from 'zod';
+import { file, z } from 'zod';
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+
+const filesToUpload = ref<File[]>([]);
+const filesToUploadPreviews = ref<string[]>([]);
+
 const messageQuery = route.query.message as string | undefined;
 if(messageQuery) {
   toast.add({
@@ -62,29 +66,50 @@ const checkValidations = () => {
 
 const handleSubmit = async() => {
   const isValid = checkValidations();
-  if (!isValid) {
-    return;
-  }
+  if (!isValid) return;
+  if (!newProduct.value) return;
+  isSubmitting.value = true;
   
   newProduct.value!.tags = `${newProduct.value!.tags}`.split(',');
 
-  const product = await createOrUpdateProduct(newProduct.value!);
+  const product = await createOrUpdateProduct(
+    newProduct.value!,
+    filesToUpload.value.length > 0 ? filesToUpload.value : undefined
+  );
+
+  newProduct.value = product;
+
   if(isCreating.value) {
     router.replace(`/dashboard/product/${product.id}?message=Producto creado correctamente`);
 
     return;
   }
+  filesToUpload.value = [];
   toast.add({
     title: isCreating.value ? "Producto creado" : "Producto actualizado",
     description: `El producto "${product.name}" ha sido actualizado exitosamente.`,
     icon: "i-lucide-check",
   });
-
+  isSubmitting.value = false;
 }
 
 const handleCancel = () => {
   navigateTo("/dashboard/products");
 }
+
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files) {
+    filesToUpload.value = Array.from(target.files);
+  }
+
+  filesToUploadPreviews.value = filesToUpload.value.map(file => URL.createObjectURL(file));
+}; 
+
+const removeFilePreview = (index: number) => {
+  filesToUpload.value.splice(index, 1);
+  filesToUploadPreviews.value.splice(index, 1);
+};
 
 watch(newProduct, () => {
   checkValidations();
@@ -291,6 +316,28 @@ watch(newProduct, () => {
                 </button>
               </div>
             </div>
+            <ClientOnly>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div
+                  v-for="(image, index) in filesToUploadPreviews"
+                  :key="image"
+                >
+                  <div class="overflow-hidden rounded-lg relative">
+                    <img
+                      :src="image"
+                      :alt="`Previsualización ${index + 1}`"
+                      class="h-20 w-full object-cover"
+                    />
+                    <UButton
+                      color="error"
+                      icon="i-lucide-x"
+                      class="absolute top-2 right-2"
+                      @click="removeFilePreview(index)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </ClientOnly>
             <!-- <textarea
               id="product-images"
               v-model="newProduct.images"
@@ -304,7 +351,7 @@ watch(newProduct, () => {
               placeholder="https://ejemplo.com/imagen-1.jpg"
             /> -->
             <UInput
-              v-if="!isCreating"
+              v-if="!isCreating && !isSubmitting"
               type="file"
               multiple
               id="product-images"
@@ -315,6 +362,7 @@ watch(newProduct, () => {
                   ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                   : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700',
               ]"
+              @change="handleFileChange($event)"
             />
             <p class="text-sm text-gray-500 dark:text-gray-400">
               Ingresa una URL por línea.

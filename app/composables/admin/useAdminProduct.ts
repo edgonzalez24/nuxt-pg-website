@@ -8,6 +8,12 @@ export const useAdminProduct = async(id: string) => {
     // Append product data to formData
     formData.append('data', JSON.stringify(productData));
 
+    if (files && files.length > 0) {
+      files.forEach((file, _) => {
+        formData.append('files', file);
+      });
+    }
+
     try {
       if (isCreating) {
         const { product } = await $fetch("/api/admin/product", {

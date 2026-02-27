@@ -121,19 +121,27 @@ defineRouteMeta({
 
 import getPrismaClient  from "../../../utils/prisma";
 import { z } from 'zod';
-  const bodySchema = z.object({
-    slug: z.string().min(3),
-    name: z.string().min(3),
-    description: z.string().min(10),
-    price: z.number().min(0),
-    tags: z.array(z.string()).min(0),
-    images: z.array(z.string()).min(0),
-  });
+
+const bodySchema = z.object({
+  slug: z.string().min(3),
+  name: z.string().min(3),
+  description: z.string().min(10),
+  price: z.number().min(0),
+  tags: z.array(z.string()).min(0),
+  images: z.array(z.string()).min(0),
+});
+interface FileData {
+  name: string;
+  filename: string;
+  type: string;
+  data: Buffer;
+}
 
 export default defineEventHandler(async (e) => {
   const id = getRouterParam(e, 'id') as string;
   const prisma = getPrismaClient();
   const formData = await readMultipartFormData(e);
+  const files: FileData[] = [];
 
   if (!formData || formData.length === 0) {
     throw createError({
@@ -147,6 +155,15 @@ export default defineEventHandler(async (e) => {
     if (part.name === 'data' && part.data) {
       dataString = part.data.toString('utf-8');
       console.log("Received data string:", dataString);
+    }
+
+    if(part.name === 'files' && part.filename) {
+      files.push({
+        name: part.name,
+        type: part.type || 'application/octet-stream',
+        filename: part.filename,
+        data: part.data,
+      });
     }
   }
   // Validate and parse the data string
@@ -171,6 +188,25 @@ export default defineEventHandler(async (e) => {
     });
   }
 
+  // Send files to cloudinary and get the URLs
+
+  if(files.length > 0) {
+    const uploadedFiles = await Promise.all(files.map(async (file) => {
+      try {
+        const url = await fileUpload(file.data);
+        return url;
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        throw createError({
+          statusCode: 500,
+          message: 'Error uploading file',
+        });
+      }
+    }));
+    
+    body.data.images = [...body.data.images, ...uploadedFiles];
+  }
+
   const updateProduct = await prisma.product.update({
     where: { id: parseInt(id, 10) },
     data: body.data,
@@ -178,7 +214,6 @@ export default defineEventHandler(async (e) => {
 
   return {
     message: 'Product updated successfully',
-    product: updateProduct,
-    files: []
+    product: updateProduct
   };
 });
