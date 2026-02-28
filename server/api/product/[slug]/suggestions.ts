@@ -1,6 +1,3 @@
-
-import getPrismaClient from '../../../utils/prisma';
-
 defineRouteMeta({
   openAPI: {
     summary: 'Get product suggestions',
@@ -66,6 +63,8 @@ defineRouteMeta({
     },
   },
 });
+
+import getPrismaClient from '../../../utils/prisma';
 
 export default defineEventHandler(async (event) => {
   const slug  = getRouterParam(event, 'slug');

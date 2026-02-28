@@ -1,13 +1,54 @@
 <script setup lang="ts">
-defineProps<{
+import type { User } from '#auth-utils';
+import type { ProductReview } from '~/generated/prisma/client';
+
+const props = defineProps<{
   buttonLabel: string;
+  slug: string;
+  user: User | null;
 }>();
+
+const emit = defineEmits<{
+  (event: 'reviewPosted', review: ProductReview): void;
+}>();
+
+const toast = useToast();
+
 const reviewText = ref('');
 const rating = ref(0);
 const isOpen = ref(false);
-const submitReview = () => {
-  console.log('submitReview');
+const userTitle = ref('');
+
+const submitReview = async() => {
+  try {
+    const review = await $fetch<ProductReview>(`/api/product/${props.slug}/reviews`, {
+      method: 'POST',
+      body: {
+        rating: rating.value,
+        review: reviewText.value,
+        userTitle: reviewText.value
+      }
+    });
+
+    emit('reviewPosted', review);
+    toast.add({
+      title: 'Rese?a enviada',
+      description: 'Tu rese?a ha sido enviada correctamente'
+    })
+  } catch (e) {
+    toast.add({
+      title: 'Error al enviar rese?a',
+      description: e instanceof Error ? e.message : 'Unknonw error',
+      color: 'error'
+    })
+  }
   isOpen.value = false;
+};
+const handleCloseModal = () => {
+  isOpen.value = false;
+  reviewText.value = '';
+  rating.value = 0;
+  userTitle.value = '';
 };
 </script>
 
@@ -17,6 +58,7 @@ const submitReview = () => {
     @close="isOpen = false"
     title="Añadir reseña"
     description="Deja tu reseña sobre el producto."
+    @update:open="handleCloseModal"
   >
     <UButton
       :label="buttonLabel"
@@ -48,6 +90,20 @@ const submitReview = () => {
             </div>
           </div>
 
+          <div class="col-span-1">
+            <UInput
+              :model-value="user?.name"
+              class="w-full"
+              :disabled="true"
+            />
+          </div>
+          <div class="col-span-1">
+            <UInput
+              v-model="userTitle"
+              class="w-full"
+              placeholder="Titulo del usuario"
+            />
+          </div>
           <div class="col-span-1">
             <UTextarea
               v-model="reviewText"
