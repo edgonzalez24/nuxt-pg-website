@@ -36,6 +36,9 @@ export default defineNuxtConfig({
 
   // Prender - Todo el sitio
   nitro: {
+    externals: {
+      external: ['@prisma/client']
+    },
     experimental: {
       openAPI: true,
     },
