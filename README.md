@@ -8,6 +8,7 @@ Modern web application built with Nuxt.js, Vue, TypeScript, Prisma and PostgreSQ
 ![Prisma](https://img.shields.io/badge/Prisma-7.4.0-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL%20%2B%20Neon-Cloud-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1.16-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-2.9.0-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
 
 ## 🚀 Tech Stack
 
@@ -26,6 +27,9 @@ Modern web application built with Nuxt.js, Vue, TypeScript, Prisma and PostgreSQ
 - <img src="https://avatars.githubusercontent.com/u/121837880?s=200&v=4" width="20" height="20"/> **Neon** – Serverless Postgres in the cloud (used as the managed PostgreSQL provider)
 - **Prisma Adapter PG** – PostgreSQL adapter for Prisma
 
+### Storage & Media
+- ☁️ **Cloudinary 2.9** – Cloud-based image and video management service for storing and optimizing media assets
+
 ### Developer Tooling
 - <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/eslint/eslint-original.svg" width="20" height="20"/> **ESLint** – JavaScript/TypeScript linter
 - **Zod** – TypeScript-first schema validation
@@ -41,6 +45,19 @@ Modern web application built with Nuxt.js, Vue, TypeScript, Prisma and PostgreSQ
 - ✅ **Pre-rendered public pages** – Better SEO and performance
 - ✅ **Responsive design** – Works across devices
 - ✅ **Type-safe data layer** – End-to-end types with TypeScript and Prisma
+
+## 📸 Application Screenshots
+
+Here are some screenshots showcasing the application interface and functionality:
+
+### Home Page
+![Application Evidence 1](screenshots/evidence-app.png)
+
+### Product Catalog
+![Application Evidence 2](screenshots/evidence-app-2.png)
+
+### Product Details
+![Application Evidence 3](screenshots/evidence-app-3.png)
 
 ## 🛠️ Setup
 
@@ -83,13 +100,13 @@ Modern web application built with Nuxt.js, Vue, TypeScript, Prisma and PostgreSQ
 4. **Set up the database**
    ```bash
    # Generate Prisma client
-   npm run prisma:generate
+   bun prisma:generate
    
    # Run database migrations
-   npm run db:migrate
+   bun db:migrate
    
    # Seed database (optional)
-   npm run db:seed
+   bun db:seed
    ```
 
 ## 🚀 Usage
@@ -125,6 +142,41 @@ yarn dev
 # bun
 bun run dev
 ```
+
+### Authentication & Test Users
+
+The application includes a complete authentication system with session management. After seeding the database, you can use the following test users to log in:
+
+#### Test Users
+
+| Email | Password | Roles | Description |
+|-------|----------|-------|-------------|
+| `lionel@google.com` | `Abc123!@#` | `admin`, `user` | Admin user with full access |
+| `cristiano@google.com` | `Abc123!@#` | `user` | Regular user |
+| `kylian@google.com` | `Abc123!@#` | `user` | Regular user |
+| `luka@google.com` | `Abc123!@#` | `user` | Regular user |
+| `kevin@google.com` | `Abc123!@#` | `user` | Regular user |
+
+#### Login
+
+1. Navigate to the login page at `http://localhost:3000/login`
+2. Enter one of the test user credentials from the table above
+3. After successful login, you'll be redirected to the home page
+
+#### Features
+
+- 🔐 **Secure authentication** – Passwords are hashed using bcrypt
+- 🍪 **Session management** – Uses cookie-based sessions via `nuxt-auth-utils`
+- 👤 **Role-based access** – Admin users have access to the dashboard and admin endpoints
+- 🛡️ **Protected routes** – Middleware protects authenticated routes
+- 📝 **User registration** – New users can register at `/register`
+
+#### Admin Access
+
+The user `lionel@google.com` has admin privileges and can:
+- Access the admin dashboard at `/dashboard`
+- Manage products (create, update, delete)
+- Access admin-only API endpoints
 
 ### Production
 
@@ -179,18 +231,37 @@ bun run preview
 ```
 Nuxt project/
 ├── app/                    # Nuxt application
+│   ├── assets/             # Static assets (CSS, images)
+│   │   └── css/            # Stylesheets
 │   ├── components/         # Vue components
-│   │   ├── dashboard/      # Dashboard components
-│   │   ├── home/           # Landing page components
-│   │   ├── product/        # Product-related components
-│   │   └── shared/         # Shared UI components
-│   ├── layouts/            # Application layouts
-│   ├── pages/              # Pages and routes
-│   │   ├── (auth)/         # Authentication pages
-│   │   ├── (public)/       # Public pages
-│   │   └── dashboard/      # Dashboard pages
+│   │   ├── dashboard/      # Dashboard components (Navbar, Sidebar)
+│   │   ├── home/           # Landing page components (CTA, Features, Stack, Testimonials)
+│   │   ├── icons/          # Icon components
+│   │   ├── modal/          # Modal components (Review)
+│   │   ├── pricing/        # Pricing components (Table)
+│   │   ├── product/        # Product-related components (Card, Reviews, Suggestions)
+│   │   ├── products/       # Products listing components (Grid)
+│   │   └── shared/         # Shared UI components (Footer, Header, Pagination)
+│   ├── composables/        # Vue composables
+│   │   ├── admin/          # Admin composables (useAdminProduct)
+│   │   ├── useAuthentication.ts
+│   │   ├── usePaginatedProducts.ts
+│   │   └── useProduct.ts
 │   ├── generated/          # Generated code
 │   │   └── prisma/         # Generated Prisma client
+│   │       ├── models/     # Prisma models (Product, ProductReview, SiteReview, User)
+│   │       └── internal/   # Internal Prisma types
+│   ├── layouts/            # Application layouts
+│   │   ├── dashboard-layout.vue
+│   │   ├── default.vue
+│   │   └── login-layout.vue
+│   ├── middleware/         # Client-side middleware
+│   │   ├── auth.ts         # Authentication middleware
+│   │   └── not-authenticated.ts
+│   ├── pages/              # Pages and routes
+│   │   ├── (auth)/         # Authentication pages (login, register)
+│   │   ├── (public)/       # Public pages (about, contact, index, pricing, product, products)
+│   │   └── dashboard/      # Dashboard pages (index, product, products)
 │   └── utils/              # Frontend utilities
 ├── prisma/                 # Prisma configuration
 │   ├── schema.prisma       # Prisma schema (models, relationships, configuration)
@@ -198,16 +269,41 @@ Nuxt project/
 │   │   ├── migration_lock.toml  # Migration lock file
 │   │   └── [timestamp]_*/       # Migration directories with SQL files
 │   └── seed/               # Database seed scripts
-│       ├── seed-database.ts     # Main seed runner
-│       ├── product.seed.ts      # Product seeding logic
-│       └── siteReviews.seed.ts  # Site reviews seeding logic
+│       ├── seed-database.ts        # Main seed runner
+│       ├── products.seed.ts        # Product seeding logic
+│       ├── product-reviews.seed.ts # Product reviews seeding logic
+│       ├── site-reviews.seed.ts    # Site reviews seeding logic
+│       └── users.seed.ts           # Users seeding logic
 ├── server/                 # Nuxt server
 │   ├── api/                # API routes
-│   └── middleware/         # Server middleware
+│   │   ├── admin/          # Admin API endpoints
+│   │   │   └── product/    # Product admin endpoints (CRUD)
+│   │   ├── auth/           # Authentication endpoints (login)
+│   │   ├── home/           # Home page endpoints (reviews)
+│   │   ├── product/        # Product endpoints (by slug, reviews, suggestions)
+│   │   └── products/       # Products listing endpoint
+│   ├── middleware/         # Server middleware
+│   │   └── admin.ts        # Admin authentication middleware
+│   ├── routes/             # Server routes
+│   └── utils/              # Server utilities
+│       └── prisma.ts       # Prisma client instance
 ├── shared/                 # Shared code
 │   ├── types/              # TypeScript types
+│   │   ├── auth.d.ts       # Authentication types
+│   │   ├── product.ts      # Product types
+│   │   └── site-review.ts  # Site review types
 │   └── utils/              # Shared utilities
-└── public/                 # Static assets
+│       ├── date-formats.ts
+│       ├── file-upload.ts
+│       └── format-curency.ts
+├── screenshots/            # Project screenshots
+│   ├── scalar-home.png     # Scalar home page screenshot
+│   └── scalar-product.png  # Scalar product endpoint screenshot
+├── public/                 # Static assets (favicon, robots.txt, og-image)
+├── nuxt.config.ts          # Nuxt configuration
+├── prisma.config.ts        # Prisma configuration
+├── tsconfig.json           # TypeScript configuration
+└── package.json            # Project dependencies and scripts
 ```
 
 ## 🗄️ Database
@@ -283,6 +379,14 @@ defineRouteMeta({
 1. Start the development server: `bun dev`
 2. Navigate to `http://localhost:3000/_scalar`
 3. Explore endpoints, test requests, and view schemas in the interactive Scalar UI
+
+#### Screenshots
+
+**Scalar Home Page:**
+![Scalar Home](screenshots/scalar-home.png)
+
+**Scalar Product Endpoint:**
+![Scalar Product](screenshots/scalar-product.png)
 
 ## 📚 Resources
 
